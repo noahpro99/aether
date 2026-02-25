@@ -24,11 +24,26 @@ export function isOmarchyInstalled() {
 }
 
 /**
- * Restarts swaybg wallpaper service with a new wallpaper
- * Uses uwsm-app to properly launch in the Hyprland/uwsm environment
+ * Checks if a process is running
+ * @param {string} processName - Name of the process
+ * @returns {boolean} True if running
+ */
+export function isProcessRunning(processName) {
+    try {
+        const [success, stdout] = GLib.spawn_command_line_sync(
+            `pgrep -x ${processName}`
+        );
+        return success && stdout.length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Reloads the wallpaper service (swaybg or hyprpaper)
  * @returns {boolean} Success status
  */
-export function restartSwaybg() {
+export function reloadWallpaper() {
     try {
         // Use the symlink path that omarchy uses
         const backgroundLink = GLib.build_filenamev([
@@ -39,8 +54,27 @@ export function restartSwaybg() {
             'background',
         ]);
 
-        console.log('Restarting swaybg with background link:', backgroundLink);
+        console.log(
+            'Reloading wallpaper with background link:',
+            backgroundLink
+        );
 
+        // Check if hyprpaper is running
+        if (isProcessRunning('hyprpaper')) {
+            console.log('Hyprpaper detected, updating via hyprctl...');
+            // We need to preload and then set the wallpaper
+            // hyprpaper requires absolute paths, but backgroundLink is already absolute
+            GLib.spawn_command_line_async(
+                `hyprctl hyprpaper preload "${backgroundLink}"`
+            );
+            GLib.spawn_command_line_async(
+                `hyprctl hyprpaper wallpaper ", ${backgroundLink}"`
+            );
+            return true;
+        }
+
+        // Fallback to swaybg (original behavior)
+        console.log('Restarting swaybg...');
         // Kill existing swaybg process
         GLib.spawn_command_line_async('pkill -x swaybg');
 
@@ -50,10 +84,18 @@ export function restartSwaybg() {
             `setsid uwsm-app -- swaybg -i "${backgroundLink}" -m fill`
         );
 
-        console.log('Swaybg restarted successfully');
         return true;
     } catch (e) {
-        console.error('Error restarting swaybg:', e.message);
+        console.error('Error reloading wallpaper:', e.message);
         return false;
     }
+}
+
+/**
+ * Restarts swaybg wallpaper service with a new wallpaper
+ * @deprecated Use reloadWallpaper() instead
+ * @returns {boolean} Success status
+ */
+export function restartSwaybg() {
+    return reloadWallpaper();
 }

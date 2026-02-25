@@ -15,7 +15,7 @@ import {
 import {getTemplateMap, resolveTemplatePath} from './template-utils.js';
 import {loadJsonFile} from './file-utils.js';
 import {hexToRgbString, hexToRgba, hexToYaruTheme} from './color-utils.js';
-import {restartSwaybg, isOmarchyInstalled} from './service-manager.js';
+import {reloadWallpaper, isOmarchyInstalled} from './service-manager.js';
 import {DEFAULT_COLORS} from '../constants/colors.js';
 import {getAppNameFromFileName} from '../constants/templates.js';
 import {GtkThemeApplier} from './theme-appliers/GtkThemeApplier.js';
@@ -1008,8 +1008,8 @@ export class ConfigWriter {
                     'background',
                 ]);
                 createSymlink(wallpaperPath, symlinkPath, 'wallpaper');
-                // Restart swaybg using the symlink (no path needed, it uses the symlink)
-                restartSwaybg();
+                // Reload wallpaper service (handles both swaybg and hyprpaper)
+                reloadWallpaper();
             }
         } catch (e) {
             console.error('Error applying wallpaper:', e.message);

@@ -3,3 +3,8 @@ node_modules/
 .cache/
 blueprints/
 temp/
+.vscode/
+.DS_Store
+.direnv/
+result
+.env*
