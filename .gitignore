@@ -6,3 +6,8 @@ temp/
 build/bin/
 frontend/dist/
 build/darwin/
+
+# nix
+result
+result-*
+.direnv/
