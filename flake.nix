@@ -34,6 +34,15 @@
             gdk-pixbuf
             harfbuzz
             librsvg
+
+            # GIO TLS backend. WebKitGTK loads remote images (Wallhaven thumbnails)
+            # in its own network process, and without this module every https
+            # fetch fails and the webview renders a broken-image icon.
+            # wrapGAppsHook3 only adds it to GIO_EXTRA_MODULES if it is an input.
+            glib-networking
+
+            # Fallback icon theme, so missing-icon lookups do not render blank.
+            adwaita-icon-theme
           ];
 
           # Binaries aether shells out to at runtime (internal/platform).
